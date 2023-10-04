@@ -2,21 +2,25 @@ Imports System
 
 Module Program
     Sub Main(
+
        4.14494949       	
-       7.5.10
-       4E10
+       7.510.5
+       .10
        1000000
        10.5
+       4E10
        10EEEE5
        10E-5
        10E+10
        -10
-+10
-       .10
+       +10
        133
        a52
-+ 1
-a,B,C
-E
-10,520
-     
+       + 10
+       A,B,C
+       E
+       10,520
+       "cadena"
+       10,44444444444444444,0
+       print("hola mundo")
+       .cadena.len()

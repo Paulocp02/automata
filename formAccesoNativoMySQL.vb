@@ -7,7 +7,7 @@ Public Class formAccesoNativoMySQL
         Dim numeroRegistros As Integer = 0
         Do While dr.Read
             numeroRegistros = numeroRegistros + 1
-.10
+        .10
         Loop
         numeroRegistrosConsulta = numeroRegistros
     End Function

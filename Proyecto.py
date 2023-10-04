@@ -42,16 +42,16 @@ class Window(QMainWindow):
         mainWidget.setStyleSheet("background-color: gray;")
         mainCanva = QVBoxLayout(mainWidget)
 
-        widthBorde=950
+        
         # Marco1
         Marco1 = QWidget()
-        Marco1.setFixedSize(950, 800)
+        Marco1.setFixedSize(900, 800)
         Marco1.setStyleSheet("background-color: white; border: none; padding: 0;")
         
         
         # Marco2
         Marco2 = QWidget()
-        Marco2.setFixedSize(940, 800)
+        Marco2.setFixedSize(990, 800)
         Marco2.setStyleSheet("background-color: white; border: none; padding: 0;")
 
         canvaUno = QVBoxLayout(Marco1)
@@ -114,7 +114,6 @@ class Window(QMainWindow):
         # Agregar el layout horizontal y la ventana de error al layout vertical principal
         mainCanva.addLayout(layoutHorizontal)
         mainCanva.addWidget(ventanaError)
-
 
     def abrirArchivo(self):
         rutaArchivo, _ = QFileDialog.getOpenFileName(
@@ -233,6 +232,7 @@ class Window(QMainWindow):
             simbolo = entrada[contador]
 
             if estado == 1:
+                
                 if "0" <= simbolo <= "9":
                     estado = 2
                 elif simbolo == "+" or simbolo == "-":
@@ -242,7 +242,8 @@ class Window(QMainWindow):
                     break
 
             elif estado == 2:
-                if simbolo == ".":
+                
+                if simbolo == "." or simbolo==',':
                     estado = 3
                 elif simbolo == "E":
                     estado = 5
@@ -252,6 +253,7 @@ class Window(QMainWindow):
                     break
 
             elif estado == 3:
+                
                 if "0" <= simbolo <= "9":
                     estado = 4
                 else:
@@ -263,7 +265,7 @@ class Window(QMainWindow):
                     estado = 4
                 elif simbolo == "E":
                     estado = 5
-                elif simbolo == ".":
+                elif simbolo == "." or simbolo == ",":
                     estado = 8
 
                 else:
@@ -338,13 +340,16 @@ class Window(QMainWindow):
         caracteresEspeciales = {",", "(", ")", "{", "}", ";", ":"}
 
         # Conjunto de operadores de comparación
-        operaCompard = {"<>", "<=", ">=", "!=", "=", "<", ">"}
+        operaCompara = {"<>", "<=", ">=", "!=", "==", "<", ">"}
+
+        # Conjunto de operadores de asignacion
+        operadores_asignacion = {'=', '+=', '-=', '*=', '/=', '\=', 'Mod=', '^='}
 
         # Conjunto de operadores lógicos
         operaLogi = {"AND", "ANDALSO", "OR", "ORELSE", "NOT"}
 
         # Conjunto de operadores aritméticos
-        operaAritm = {"+", "-", "*", "/", "%", "^"}
+        operaAritm = {"+", "-", "*", "/", "%", "^","MOD"}
 
         # Se inicia una cadena que almacena el resultado final
         textoToken = ""
@@ -354,10 +359,10 @@ class Window(QMainWindow):
         for i in saltoLinea:
             # Se separa en tokens
             # tokens = re.findall(r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+', i)
-            tokens = re.findall(r'"[^"]*"|[^\s]+', i)
+            tokens = re.findall(r'"[^"]*"|\(|\)|[^\s()]+', i)
             # Ciclo for que agrega los tokens clasificados por línea con su coma
             lineaClasifi = ""
-
+            
             numero_de_linea += 1
 
             for token in tokens:
@@ -365,24 +370,30 @@ class Window(QMainWindow):
                     continue
 
                 elif re.match(r'^".*"$', token):  # Cadenas
+                    
                     lineaClasifi += f"Cadena : {token} | "
 
                 elif token in caracteresEspeciales:
                     lineaClasifi += f"CaracEspe : {token} | "  # Caracteres especiales
-                elif token in operaCompard:
-                    lineaClasifi += (
-                        f"OperaCompara : {token} | "  # Operadores de comprobación
-                    )
+
+                elif token in operaCompara:
+                    lineaClasifi += f"OperaCompara : {token} | "  # Operadores de comprobación
+                    
                 elif token in operaLogi:
                     lineaClasifi += f"OperaLógico : {token} | "  # Operadores lógicos
+
                 elif token in operaAritm:
                     lineaClasifi += f"OperaAritm : {token} | "  # Operadores Aritméticos
+                
+                elif token in operadores_asignacion:
+                    lineaClasifi += f"OperaAsigna : {token} | " # Operadores Asignacion
 
                 elif token in palabrasReservadas:
                     lineaClasifi += f"PalabReser : {token} | "  # Palabra Reservada
 
                 # elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", token):  # Números
-                elif re.match(r"^[0-9\+\-E\.]+$", token):  # Números
+                
+                elif re.match(r'(\.[0-9]+|[0-9]+[E\.\,]*)', token):  # Números
                     if self.es_numero_cientifico_vb(token):
                         lineaClasifi += f"Número: {token} | "
                     else:
