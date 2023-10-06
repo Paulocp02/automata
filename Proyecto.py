@@ -223,6 +223,35 @@ class Window(QMainWindow):
                 token_linea + "\n"
             )  # Se inserta los tokens de cada linea con salto de linea
 
+    def es_variable(self, entrada):
+        contador = 0
+        estado=1 
+        error_encontrado = False
+
+        while contador < len(entrada):
+            simbolo = entrada[contador]
+
+            if estado==1:
+                if ('A' <= simbolo <= 'Z')  or (simbolo == '_'):
+                    estado = 3
+                elif ('0'<= simbolo <= '9'):
+                    estado =2
+                else:
+                    error_encontrado =True
+                    break
+            elif estado==2:
+                error_encontrado=True
+                break
+            elif estado==3:
+                if ('A' <= simbolo <= 'Z') or  ('0' <= simbolo <= '9') or (simbolo == '_'):
+                    estado=3
+                else:
+                    error_encontrado=True
+                    break
+            contador+=1
+        
+        return estado ==3 and not error_encontrado
+            
     def es_numero_cientifico_vb(self, entrada):
         contador = 0
         estado = 1
@@ -350,6 +379,9 @@ class Window(QMainWindow):
 
         # Conjunto de operadores aritméticos
         operaAritm = {"+", "-", "*", "/", "%", "^","MOD"}
+        
+        # Conjunto de operadores aritméticos
+        operaAcces = {"."}
 
         # Se inicia una cadena que almacena el resultado final
         textoToken = ""
@@ -359,7 +391,10 @@ class Window(QMainWindow):
         for i in saltoLinea:
             # Se separa en tokens
             # tokens = re.findall(r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+', i)
-            tokens = re.findall(r'"[^"]*"|\(|\)|[^\s()]+', i)
+            
+            #expReg = r'"[^"]*"|\(|\)|[^\s()]+'
+            expReg=r'"[^"]*"|[A-Za-z]+|[\d.]+(?:[Ee][+\-]?\d+)?|[\.\(\)]'
+            tokens = re.findall(expReg, i)
             # Ciclo for que agrega los tokens clasificados por línea con su coma
             lineaClasifi = ""
             
@@ -372,7 +407,9 @@ class Window(QMainWindow):
                 elif re.match(r'^".*"$', token):  # Cadenas
                     
                     lineaClasifi += f"Cadena : {token} | "
-
+                elif token in operaAcces:
+                    lineaClasifi += f"CaracAcces : {token} | "  # Caracteres especiales
+                
                 elif token in caracteresEspeciales:
                     lineaClasifi += f"CaracEspe : {token} | "  # Caracteres especiales
 
@@ -393,18 +430,21 @@ class Window(QMainWindow):
 
                 # elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", token):  # Números
                 
-                elif re.match(r'(\.[0-9]+|[0-9]+[E\.\,]*)', token):  # Números
+                elif re.match(r'([+\-]?\d+(\.\d+)?([Ee][+\-]?\d+)?)', token):  # Números
                     if self.es_numero_cientifico_vb(token):
                         lineaClasifi += f"Número: {token} | "
                     else:
                         lineaClasifi += f"-----> ERROR: {token} | "
-                        self.cajaError.append(
-                            f"Error en la línea {numero_de_linea}: {token} no es un número válido"
-                            + "\n"
-                        )
+                        self.cajaError.append(f"Error en la línea {numero_de_linea}: {token} no es un número válido"+"\n")
 
                 else:  # Identificador válido
-                    lineaClasifi += f"Identi : {token} | "
+                    
+                    if self.es_variable(token):
+                        lineaClasifi += f"Identi : {token} | "
+                    else:
+                        lineaClasifi += f"-----> ERROR: {token} | "
+                        self.cajaError.append(f"Error en la línea {numero_de_linea}: {token} no es una variable válida"+ "\n")
+
 
             # Agregar la línea clasificada al resultado final con un salto de línea
             textoToken += f" {numero_de_linea}      {lineaClasifi[:-2]}" + "\n"
