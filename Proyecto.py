@@ -390,11 +390,16 @@ class Window(QMainWindow):
 
         for i in saltoLinea:
             # Se separa en tokens
-            # tokens = re.findall(r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+', i)
+            #expReg=r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+'
             
             #expReg = r'"[^"]*"|\(|\)|[^\s()]+'
-            expReg=r'"[^"]*"|[A-Za-z]+|[\d.]+(?:[Ee][+\-]?\d+)?|[\.\(\)]'
+            #expReg=r'"[^"]*"|[A-Za-z]+|[\d.]+(?:[Ee][+\-]?\d+)?|[\.\(\)]'
+            expReg = r'"[^"]*"|[A-Za-z\d]+|[\d.,]+(?:[Ee][+\-][\d.,]+)?|[\.\(\)]'
             tokens = re.findall(expReg, i)
+
+
+
+            print(tokens)
             # Ciclo for que agrega los tokens clasificados por línea con su coma
             lineaClasifi = ""
             
@@ -430,11 +435,11 @@ class Window(QMainWindow):
 
                 # elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", token):  # Números
                 
-                elif re.match(r'([+\-]?\d+(\.\d+)?([Ee][+\-]?\d+)?)', token):  # Números
+                elif re.match(r'([+\-]?(\d+(\.\d+)?([Ee][+\-]?\d+)?)|([.,]\d+(\.\d+)?([Ee][+\-]?\d+)?))', token):  # Números
                     if self.es_numero_cientifico_vb(token):
                         lineaClasifi += f"Número: {token} | "
                     else:
-                        lineaClasifi += f"-----> ERROR: {token} | "
+                        lineaClasifi += f"-----> ERROR Num: {token} | "
                         self.cajaError.append(f"Error en la línea {numero_de_linea}: {token} no es un número válido"+"\n")
 
                 else:  # Identificador válido
@@ -442,7 +447,7 @@ class Window(QMainWindow):
                     if self.es_variable(token):
                         lineaClasifi += f"Identi : {token} | "
                     else:
-                        lineaClasifi += f"-----> ERROR: {token} | "
+                        lineaClasifi += f"-----> ERROR Iden: {token} | "
                         self.cajaError.append(f"Error en la línea {numero_de_linea}: {token} no es una variable válida"+ "\n")
 
 
