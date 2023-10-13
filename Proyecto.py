@@ -74,7 +74,7 @@ class Window(QMainWindow):
         scroll_area1.setWidgetResizable(True)
         self.cajaTexto1 = QTextEdit()
         self.cajaTexto1.setFixedSize(5000, 5000)
-        self.cajaTexto1.setStyleSheet("font-size: 18px;")
+        self.cajaTexto1.setStyleSheet("font-size: 12px;")
         self.cajaTexto1.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll_area1.setWidget(self.cajaTexto1)
         
@@ -91,7 +91,7 @@ class Window(QMainWindow):
         scroll_area2.setWidgetResizable(True)
         self.cajaTexto2 = QTextBrowser()
         self.cajaTexto2.setFixedSize(5000, 5000)
-        self.cajaTexto2.setStyleSheet("font-size: 18px;")
+        self.cajaTexto2.setStyleSheet("font-size: 12px;")
         self.cajaTexto2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll_area2.setWidget(self.cajaTexto2)
         canvaDos.addWidget(scroll_area2)
@@ -223,84 +223,110 @@ class Window(QMainWindow):
                 token_linea + "\n"
             )  # Se inserta los tokens de cada linea con salto de linea
 
-    def es_numero_cientifico_vb(self, entrada):
-        contador = 0
+    def AutoNumeroReal(self, entrada):
         estado = 1
-        error_encontrado = False
-
-        while contador < len(entrada):
-            simbolo = entrada[contador]
+        conta = 0
+        while conta < len(entrada):
+            cadena = entrada[conta]
 
             if estado == 1:
-                
-                if "0" <= simbolo <= "9":
+                if cadena.isdigit():
                     estado = 2
-                elif simbolo == "+" or simbolo == "-":
-                    estado = 3
+                elif cadena =="-" or cadena =="+":
+                    estado = 2 
                 else:
-                    error_encontrado = True
-                    break
+                    return False
 
             elif estado == 2:
-                
-                if simbolo == "." or simbolo==',':
-                    estado = 3
-                elif simbolo == "E":
-                    estado = 5
-                elif "0" <= simbolo <= "9":
+                if cadena.isdigit():
                     estado = 2
+                elif cadena == '.' or cadena == ',':
+                    estado = 3
+                elif cadena == 'E':
+                    estado = 5
                 else:
-                    break
+                    return False
 
             elif estado == 3:
+                if cadena.isdigit():
+                    estado = 4
                 
-                if "0" <= simbolo <= "9":
-                    estado = 4
                 else:
-                    error_encontrado = True
-                    break
+                    return False
 
-            elif estado == 4:
-                if "0" <= simbolo <= "9":
+            elif estado ==4:
+                if cadena.isdigit():
                     estado = 4
-                elif simbolo == "E":
+                elif cadena == 'E':
                     estado = 5
-                elif simbolo == "." or simbolo == ",":
-                    estado = 8
-
                 else:
-                    break
+                    return False
 
             elif estado == 5:
-                if simbolo == "+" or simbolo == "-":
+                if cadena.isdigit():
+                    estado = 7
+                elif cadena =="-" or cadena =="+":
                     estado = 6
-                elif "0" <= simbolo <= "9":
-                    estado = 7
                 else:
-                    error_encontrado = True
-                    break
-
+                    return False
+            
             elif estado == 6:
-                if "0" <= simbolo <= "9":
+                if cadena.isdigit():
                     estado = 7
-
+                
                 else:
-                    error_encontrado = True
-                    break
-
+                    return False
+            
             elif estado == 7:
-                if "0" <= simbolo <= "9":
+                if cadena.isdigit():
                     estado = 7
+                
                 else:
-                    break
+                    return False
 
-            elif estado == 8:
-                error_encontrado = True
-                break
+            conta += 1
 
-            contador += 1
+        return estado in [2, 4, 7]
 
-        return estado == 2 or estado == 4 or estado == 7 and not error_encontrado
+        #return estado == 2 or estado == 4 or estado == 7 and  error_encontrado==False
+
+    def AutoIdenti(self,entrada):
+        contador = 0
+        estado=1 
+        
+        while contador < len(entrada):
+
+            simbolo = entrada[contador]
+
+            if estado==1:
+
+                if simbolo.isalpha():
+                    estado = 3
+                elif simbolo.isdigit():
+                    estado = 2
+                elif simbolo=="_":
+                    estado = 3
+                else:
+                    return False
+                
+            elif estado==2:
+                return False
+
+            elif estado==3:
+                if simbolo.isalpha():
+                    estado=3
+                elif simbolo.isdigit():
+                    estado = 3
+                elif simbolo=="_":
+                    estado = 3
+                else:
+                    return False
+                    
+            
+            contador+=1
+        
+        return estado in [3]
+
 
     def clasificarTokens(self):
         self.cajaTexto2.clear()
@@ -333,14 +359,14 @@ class Window(QMainWindow):
         "VARIANT", "WEND", "WHEN", "WHILE", "WIDENING", "WITH", "WITHEVENTS", "WRITEONLY", "XOR"
     ]
 
-
         # Conjunto de operadores de acceso
+        operadoresAcceso= {".","!","(",")","()"}
 
         # Conjunto de operadores de caracteres especiales
-        caracteresEspeciales = {",", "(", ")", "{", "}", ";", ":"}
+        caracteresEspeciales = {",", "{", "}", ";", ":"}
 
         # Conjunto de operadores de comparación
-        operaCompara = {"<>", "<=", ">=", "!=", "==", "<", ">"}
+        operaCompara = {"<>", "<=", ">=", "!=", "==", "<", ">",'&'}
 
         # Conjunto de operadores de asignacion
         operadores_asignacion = {'=', '+=', '-=', '*=', '/=', '\=', 'Mod=', '^='}
@@ -358,53 +384,60 @@ class Window(QMainWindow):
 
         for i in saltoLinea:
             # Se separa en tokens
-            # tokens = re.findall(r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+', i)
-            tokens = re.findall(r'"[^"]*"|\(|\)|[^\s()]+', i)
+            
+            tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\(\)|\(|\))', i) if token and not token.isspace()]
+            # Es mejor usar .split cuando se desea separar una cadena en multiples fragamentos
+            # Se usa if token and not token.isspace() para elimiar tokens vacios y que sean espacios en blancos
+
             # Ciclo for que agrega los tokens clasificados por línea con su coma
             lineaClasifi = ""
-            
             numero_de_linea += 1
 
             for token in tokens:
-                if token.isspace():
-                    continue
-
-                elif re.match(r'^".*"$', token):  # Cadenas
-                    
-                    lineaClasifi += f"Cadena : {token} | "
+                if re.match(r'^".*"$', token):  # Cadenas
+                    lineaClasifi += f"Cad : {token} | "
+                
+                elif re.match(r"^'.*", token): # comentarios
+                    lineaClasifi += f"Come : {token} | "
+                
+                elif token in operadoresAcceso:
+                    lineaClasifi += f"OpAcc : {token} | "  # Operadores de Acceso
 
                 elif token in caracteresEspeciales:
-                    lineaClasifi += f"CaracEspe : {token} | "  # Caracteres especiales
+                    lineaClasifi += f"CarcEsp : {token} | "  # Caracteres especiales
 
                 elif token in operaCompara:
-                    lineaClasifi += f"OperaCompara : {token} | "  # Operadores de comprobación
+                    lineaClasifi += f"OpComp : {token} | "  # Operadores de comprobación
                     
                 elif token in operaLogi:
-                    lineaClasifi += f"OperaLógico : {token} | "  # Operadores lógicos
+                    lineaClasifi += f"OpLog : {token} | "  # Operadores lógicos
 
                 elif token in operaAritm:
-                    lineaClasifi += f"OperaAritm : {token} | "  # Operadores Aritméticos
+                    lineaClasifi += f"OpArit : {token} | "  # Operadores Aritméticos
                 
                 elif token in operadores_asignacion:
-                    lineaClasifi += f"OperaAsigna : {token} | " # Operadores Asignacion
+                    lineaClasifi += f"OpAsign : {token} | " # Operadores Asignacion
 
                 elif token in palabrasReservadas:
-                    lineaClasifi += f"PalabReser : {token} | "  # Palabra Reservada
+                    lineaClasifi += f"PalbRes : {token} | "  # Palabra Reservada
 
-                # elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", token):  # Números
-                
-                elif re.match(r'(\.[0-9]+|[0-9]+[E\.\,]*)', token):  # Números
-                    if self.es_numero_cientifico_vb(token):
-                        lineaClasifi += f"Número: {token} | "
+                elif re.match(r'[\+-]?(\.[0-9]+|[0-9]+[E\.\,]*)', token):  # Números
+                    if self.AutoNumeroReal(token):
+                        lineaClasifi += f"Numero: {token} | "
                     else:
-                        lineaClasifi += f"-----> ERROR: {token} | "
+                        lineaClasifi += f"Numero: {token} | "
                         self.cajaError.append(
                             f"Error en la línea {numero_de_linea}: {token} no es un número válido"
-                            + "\n"
-                        )
-
-                else:  # Identificador válido
-                    lineaClasifi += f"Identi : {token} | "
+                            + "\n")
+                
+                else:  # Identi
+                    if self.AutoIdenti(token):
+                        lineaClasifi += f"Identi: {token} | "
+                    else:
+                        lineaClasifi += f"Identi: {token} | "
+                        self.cajaError.append(
+                            f"Error en la línea {numero_de_linea}: {token} no es identi"
+                            + "\n")
 
             # Agregar la línea clasificada al resultado final con un salto de línea
             textoToken += f" {numero_de_linea}      {lineaClasifi[:-2]}" + "\n"
