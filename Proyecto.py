@@ -200,10 +200,8 @@ class Window(QMainWindow):
             )
 
             # Se separa en Tokens
-            tokens = re.findall(
-                r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+',
-                linea,)
-
+            tokens = re.findall(r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+',linea,)
+            #tokens = linea.split()
             # Desgloce de la expresion regular
             # ?:"(?:\\.|[^"\\])*")|: cacha cadenas entre comillas dobles
             # (?:\'[^\n]*\') : cacha cadenas entre comillas simples
@@ -215,9 +213,8 @@ class Window(QMainWindow):
                     token_linea += ", "  # Si no es el primer token se agrea la coma
 
                 token_linea += token  # Se agrega el token actual a la cadena
-                primer_token = (
-                    False  # despues de procesar el primer token, se cambia a False
-                )
+                primer_token = (False)  # despues de procesar el primer token, se cambia a False
+                
 
             self.cajaTexto2.insertPlainText(
                 token_linea + "\n"
@@ -288,8 +285,6 @@ class Window(QMainWindow):
 
         return estado in [2, 4, 7]
 
-        #return estado == 2 or estado == 4 or estado == 7 and  error_encontrado==False
-
     def AutoIdenti(self,entrada):
         contador = 0
         estado=1 
@@ -299,13 +294,10 @@ class Window(QMainWindow):
             simbolo = entrada[contador]
 
             if estado==1:
-
-                if simbolo.isalpha():
+                if (('A' <= simbolo <= 'Z')  or (simbolo == '_')):
                     estado = 3
-                elif simbolo.isdigit():
+                elif ('0'<= simbolo <= '9'):
                     estado = 2
-                elif simbolo=="_":
-                    estado = 3
                 else:
                     return False
                 
@@ -313,20 +305,14 @@ class Window(QMainWindow):
                 return False
 
             elif estado==3:
-                if simbolo.isalpha():
+                if (('A' <= simbolo <= 'Z')  or (simbolo == '_') or ('0'<= simbolo <= '9')):
                     estado=3
-                elif simbolo.isdigit():
-                    estado = 3
-                elif simbolo=="_":
-                    estado = 3
                 else:
                     return False
                     
-            
             contador+=1
-        
-        return estado in [3]
 
+        return estado == 3
 
     def clasificarTokens(self):
         self.cajaTexto2.clear()
@@ -385,8 +371,8 @@ class Window(QMainWindow):
         for i in saltoLinea:
             # Se separa en tokens
             
-            tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\.(?=\w+\()|\(|\))', i) if token and not token.isspace()]
-
+            #tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\.(?=\w+\()|\(|\))', i) if token and not token.isspace()]
+            tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\.(?=\w+\()|\.(?=\w+\.\w+)|\(|\))', i) if token and not token.isspace()]
 
             #tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\(\)|\(|\))', i) if token and not token.isspace()]
             # Es mejor usar .split cuando se desea separar una cadena en multiples fragamentos
@@ -423,7 +409,7 @@ class Window(QMainWindow):
 
                 elif token in palabrasReservadas:
                     lineaClasifi += f"PalbRes : {token} | "  # Palabra Reservada
-
+                
                 elif re.match(r'[\+-]?(\.[0-9]+|[0-9]+[E\.\,]*)', token):  # Números
                     if self.AutoNumeroReal(token):
                         lineaClasifi += f"Numero: {token} | "
