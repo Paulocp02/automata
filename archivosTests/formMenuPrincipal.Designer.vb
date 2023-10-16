@@ -288,9 +288,9 @@ Partial Class formMenuPrincipal
         'bCopiar
         '
         Me.bCopiar.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.bCopiar.Location = New System.Drawing.Point(534, 305)
+        Me.bCopiar.Location = New System.Drawing.Point(534 , 305)
         Me.bCopiar.Name = "bCopiar"
-        Me.bCopiar.Size = New System.Drawing.Size(61, 28)
+        Me.bCopiar.Size = New System.Drawing.Size(61 , 28)
         Me.bCopiar.TabIndex = 17
         Me.bCopiar.Text = "Copiar"
         Me.bCopiar.UseVisualStyleBackColor = True
@@ -299,7 +299,7 @@ Partial Class formMenuPrincipal
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(606, 397)
+        Me.ClientSize = New System.Drawing.Size(606 , 397)
         Me.Controls.Add(Me.bCopiar)
         Me.Controls.Add(Me.bSeleccionarTodo)
         Me.Controls.Add(Me.bLimpiar)

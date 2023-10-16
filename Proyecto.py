@@ -385,7 +385,10 @@ class Window(QMainWindow):
         for i in saltoLinea:
             # Se separa en tokens
             
-            tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\(\)|\(|\))', i) if token and not token.isspace()]
+            tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\.(?=\w+\()|\(|\))', i) if token and not token.isspace()]
+
+
+            #tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\(\)|\(|\))', i) if token and not token.isspace()]
             # Es mejor usar .split cuando se desea separar una cadena en multiples fragamentos
             # Se usa if token and not token.isspace() para elimiar tokens vacios y que sean espacios en blancos
 
