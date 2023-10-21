@@ -33,6 +33,7 @@ class Window(QMainWindow):
         MenuTokens = MenuBar.addMenu("Tokens")
         MenuTokens.addAction("Obtener", self.separarEnTonkens)
         MenuTokens.addAction("Clasificar", self.clasificarTokens)
+        MenuTokens.addAction("Sistemas Numericos", self.sistemaNum)
 
     def initFrames(self):
 
@@ -186,39 +187,157 @@ class Window(QMainWindow):
         event.accept()
 
     def separarEnTonkens(self):
-        # Se borra cualquier contenido previo
         self.cajaTexto2.clear()
+        self.cajaError.clear()
+        # Se borra cualquier contenido previo
+        
         # Se separa el texto original en lineas tomando en cuenta los saltos de linea
-        lineasTexto = self.cajaTexto1.toPlainText().split("\n")
-
+        lineasSeparadas = self.cajaTexto1.toPlainText().upper().split("\n")
+        numero_de_linea = 0
+        
         # Se recorre cada linea
-        for linea in lineasTexto:
-            # Se inicia una cadena vacia que almacena los tokens de cada linea
-            token_linea = ""
-            primer_token = (
-                True # es una variable que comtrola si es el primer token de la linea
-            )
-
-            # Se separa en Tokens
-            tokens = re.findall(r'(?:"(?:\\.|[^"\\])*")|(?:\'[^\n]*\')|[a-zA-Z_][a-zA-Z0-9_]*|\b[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?\b|\b\d{3,}\d*\b|[^\s]+',linea,)
-            #tokens = linea.split()
-            # Desgloce de la expresion regular
-            # ?:"(?:\\.|[^"\\])*")|: cacha cadenas entre comillas dobles
-            # (?:\'[^\n]*\') : cacha cadenas entre comillas simples
-            # [a-zA-Z_][a-zA-Z0-9_]* : cacha identificadores, nombres seguidos de numeros o guiones bajos
-            # \S : cualquier otro caracter que no sea un espacio en blanco
+        for caracteres in lineasSeparadas:
+            
+            #tokens = caracteres.split()
+            tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\.(?=\w+\()|\.(?=\w+\.\w+)|\(|\))', caracteres) if token and not token.isspace()]
+            lineasTokens = ""
+            numero_de_linea += 1
 
             for token in tokens:
-                if not primer_token:
-                    token_linea += ", "  # Si no es el primer token se agrea la coma
+                lineasTokens += f" {token} , "
+            
+            self.cajaTexto2.append( f"{numero_de_linea} {lineasTokens[:-2]}")
 
-                token_linea += token  # Se agrega el token actual a la cadena
-                primer_token = (False)  # despues de procesar el primer token, se cambia a False
-                
+    def clasificar_error(self, error, token, numero_de_linea):
+        # Diccionario que mapea códigos de error a mensajes de error
+        errores = {
+            '1': f"Error en la línea {numero_de_linea}: {token} no es número estado 1",
+            '2': f"Error en la línea {numero_de_linea}: {token} no es número estado 2",
+            '3': f"Error en la línea {numero_de_linea}: {token} no es número estado 3",
+            '4': f"Error en la línea {numero_de_linea}: {token} no es número estado 4",
+            '5': f"Error en la línea {numero_de_linea}: {token} no es número estado 5",
+            '6': f"Error en la línea {numero_de_linea}: {token} no es número estado 6",
+            '7': f"Error en la línea {numero_de_linea}: {token} no es número estado 7",
+            '8': f"Error en la línea {numero_de_linea}: {token} no es número estado 8",
+        }
+        # Retorna el mensaje de error correspondiente al código de error
+        return errores.get(error, f"Error desconocido en la línea {numero_de_linea}: {token}")
 
-            self.cajaTexto2.insertPlainText(
-                token_linea + "\n"
-            )  # Se inserta los tokens de cada linea con salto de linea
+    def sistemaNum(self):
+        self.cajaTexto2.clear()
+        self.cajaError.clear()
+        # Se borra cualquier contenido previo
+        
+        # Se separa el texto original en lineas tomando en cuenta los saltos de linea
+        lineasSeparadas = self.cajaTexto1.toPlainText().upper().split("\n")
+        numero_de_linea = 0
+        
+        # Se recorre cada linea
+        for caracteres in lineasSeparadas:
+            
+            tokens = caracteres.split()
+            lineasTokens = ""
+            numero_de_linea += 1
+
+            for token in tokens:
+                estadosAcepta, error = self.AutoSisNum(token)
+
+                if estadosAcepta:
+                    lineasTokens += f"{token}, "
+                else:
+                    lineasTokens += f"{token}, error "
+                    mensaje_error = self.clasificar_error(error, token, numero_de_linea)
+                    self.cajaError.append(mensaje_error)
+                                                        
+            self.cajaTexto2.append( f"{numero_de_linea} {lineasTokens[:-2]}")
+
+    def AutoSisNum(self,entrada):
+        contador = 0
+        estado=0 
+        error=None
+        continuar = True
+
+        while contador < len(entrada) and (continuar == True):
+
+            simbolo = entrada[contador]
+
+            if estado==0:
+                if simbolo=='0':
+                    estado = 1
+                elif simbolo == '.':
+                    estado = 6
+                elif ('1' <= simbolo <= '9'):
+                    estado =5
+                else:
+                    error='0'
+                    continuar = False
+            
+            elif estado==1:
+                if simbolo=='.':
+                    estado = 6
+                elif simbolo == 'X':
+                    estado = 2
+                elif ('0' <= simbolo <= '7'):
+                    estado =8
+                else:
+                    error='1'
+                    continuar = False
+
+            elif estado==2:
+                if (('A' <= simbolo <= 'F')  or ('0' <= simbolo <= '9')):
+                    estado = 3
+                else:
+                    error='2'
+                    continuar = False 
+
+            elif estado==3:
+                if (('A' <= simbolo <= 'F')  or ('0' <= simbolo <= '9')):
+                    estado = 4
+                else:
+                    error='3'
+                    continuar = False  
+
+            elif estado==4:
+                if (('A' <= simbolo <= 'F')  or ('0' <= simbolo <= '9')):
+                    estado = 3
+                else:
+                    error='4'
+                    continuar = False     
+
+            elif estado==5:
+                if simbolo == '.':
+                    estado = 6
+                elif ('0' <= simbolo <= '9'):
+                    estado = 5
+                else:
+                    error='5'
+                    continuar = False 
+
+            elif estado==6:
+                if ('0' <= simbolo <= '9'):
+                    estado = 7
+                else:
+                    error='6'
+                    continuar = False 
+
+            elif estado==7:
+                if ('0' <= simbolo <= '9'):
+                    estado = 7
+                else:
+                    error='7'
+                    continuar = False  
+
+            elif estado==8:
+                if ('0' <= simbolo <= '7'):
+                    estado = 8
+                else:
+                    error='8'
+                    continuar = False 
+
+            contador+=1
+
+        estadosAcepta =  estado in [3,4,5,7,8]
+        return (estadosAcepta, error)
 
     def AutoNumeroReal(self, entrada):
         estado = 1
@@ -325,25 +444,24 @@ class Window(QMainWindow):
         # Conjunto de palabras reservadas
         
         palabrasReservadas = [
-        "ADDHANDLER", "ADDRESSOF", "ALIAS", "AND", "ANDALSO", "AS", "BOOLEAN", "BYREF",
-        "BYTE", "BYVAL", "CALL", "CASE", "CATCH", "CBOOL", "CBYTE", "CCHAR", "CDATE",
-        "CDBL", "CDEC", "CHAR", "CINT", "CLASS", "CLNG", "COBJ", "CONST", "CONTINUE",
-        "CSBYTE", "CSHORT", "CSNG", "CSTR", "CTYPE", "CUINT", "CULNG", "CUSHORT", "DATE",
-        "DECIMAL", "DECLARE", "DEFAULT", "DELEGATE", "DIM", "DIRECTCAST", "DO", "DOUBLE",
-        "EACH", "ELSE", "ELSEIF", "END", "ENDIF", "ENUM", "ERASE", "ERROR", "EVENT",
-        "EXIT", "FALSE", "FINALLY", "FOR", "FRIEND", "FUNCTION", "GET", "GETTYPE",
-        "GOSUB", "GOTO", "HANDLES", "IF", "IMPLEMENTS", "IMPORTS", "IN", "INHERITS",
-        "INTEGER", "INTERFACE", "IS", "LET", "LIB", "LIKE", "LONG", "LOOP", "ME", "MOD",
-        "MODULE", "MUSTINHERIT", "MUSTOVERRIDE", "MYBASE", "MYCLASS", "NAMESPACE", "NARROWING",
-        "NEW", "NEXT", "NOT", "NOTHING", "NOTINHERITABLE", "NOTOVERRIDABLE", "OBJECT", "OF",
-        "ON", "OPERATOR", "OPTION", "OPTIONAL", "OR", "ORELSE", "OVERLOADS", "OVERRIDABLE",
-        "OVERRIDES", "PARAMARRAY", "PARTIAL", "PRIVATE", "PROPERTY", "PROTECTED", "PUBLIC",
-        "RAISEEVENT", "READONLY", "REDIM", "REM", "REMOVEHANDLER", "RESUME", "RETURN",
-        "SBYTE", "SELECT", "SET", "SHADOWS", "SHARED", "SHORT", "SINGLE", "STATIC",
-        "STEP", "STOP", "STRING", "STRUCTURE", "SUB", "SYNCLOCK", "THEN", "THROW", "TO",
-        "TRUE", "TRY", "TRYCAST", "TYPEOF", "UINTEGER", "ULONG", "USHORT", "USING",
-        "VARIANT", "WEND", "WHEN", "WHILE", "WIDENING", "WITH", "WITHEVENTS", "WRITEONLY", "XOR"
-    ]
+            "ADDHANDLER", "ADDRESSOF", "ALIAS", "AND", "ANDALSO", "AS", "BOOLEAN", "BYREF",
+            "BYTE", "BYVAL", "CALL", "CASE", "CATCH", "CBOOL", "CBYTE", "CCHAR", "CDATE",
+            "CDBL", "CDEC", "CHAR", "CINT", "CLASS", "CLNG", "COBJ", "CONST", "CONTINUE",
+            "CSBYTE", "CSHORT", "CSNG", "CSTR", "CTYPE", "CUINT", "CULNG", "CUSHORT", "DATE",
+            "DECIMAL", "DECLARE", "DEFAULT", "DELEGATE", "DIM", "DIRECTCAST", "DO", "DOUBLE",
+            "EACH", "ELSE", "ELSEIF", "END", "ENDIF", "ENUM", "ERASE", "ERROR", "EVENT",
+            "EXIT", "FALSE", "FINALLY", "FOR", "FRIEND", "FUNCTION", "GET", "GETTYPE",
+            "GOSUB", "GOTO", "HANDLES", "IF", "IMPLEMENTS", "IMPORTS", "IN", "INHERITS",
+            "INTEGER", "INTERFACE", "IS", "LET", "LIB", "LIKE", "LONG", "LOOP", "ME", "MOD",
+            "MODULE", "MUSTINHERIT", "MUSTOVERRIDE", "MYBASE", "MYCLASS", "NAMESPACE", "NARROWING",
+            "NEW", "NEXT", "NOT", "NOTHING", "NOTINHERITABLE", "NOTOVERRIDABLE", "OBJECT", "OF",
+            "ON", "OPERATOR", "OPTION", "OPTIONAL", "OR", "ORELSE", "OVERLOADS", "OVERRIDABLE",
+            "OVERRIDES", "PARAMARRAY", "PARTIAL", "PRIVATE", "PROPERTY", "PROTECTED", "PUBLIC",
+            "RAISEEVENT", "READONLY", "REDIM", "REM", "REMOVEHANDLER", "RESUME", "RETURN",
+            "SBYTE", "SELECT", "SET", "SHADOWS", "SHARED", "SHORT", "SINGLE", "STATIC",
+            "STEP", "STOP", "STRING", "STRUCTURE", "SUB", "SYNCLOCK", "THEN", "THROW", "TO",
+            "TRUE", "TRY", "TRYCAST", "TYPEOF", "UINTEGER", "ULONG", "USHORT", "USING",
+            "VARIANT", "WEND", "WHEN", "WHILE", "WIDENING", "WITH", "WITHEVENTS", "WRITEONLY", "XOR"]
 
         # Conjunto de operadores de acceso
         operadoresAcceso= {".","!","(",")","()"}
@@ -364,7 +482,7 @@ class Window(QMainWindow):
         operaAritm = {"+", "-", "*", "/", "%", "^","MOD"}
 
         # Se inicia una cadena que almacena el resultado final
-        textoToken = ""
+        
 
         numero_de_linea = 0
 
@@ -429,11 +547,10 @@ class Window(QMainWindow):
                             + "\n")
 
             # Agregar la línea clasificada al resultado final con un salto de línea
-            textoToken += f" {numero_de_linea}      {lineaClasifi[:-2]}" + "\n"
+            self.cajaTexto2.append( f"{numero_de_linea} {lineaClasifi[:-2]}")
+  
 
-        # Establecer el resultado formateado en el widget cajaTexto2
-        self.cajaTexto2.setPlainText(textoToken)
-
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
