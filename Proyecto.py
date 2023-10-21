@@ -1,8 +1,8 @@
 import sys
 import re
-from PyQt5.QtWidgets import (QApplication,QMainWindow,QTextEdit,QLabel,QVBoxLayout,QHBoxLayout,QFileDialog,QTextBrowser,QWidget,QMessageBox,QScrollArea,)
+from PyQt5.QtWidgets import (QApplication,QMainWindow,QTextEdit,QLabel,QVBoxLayout,QHBoxLayout,QFileDialog,QTextBrowser,QWidget,QMessageBox,QScrollArea,QShortcut)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QKeySequence
 
 
 class Window(QMainWindow):
@@ -20,6 +20,32 @@ class Window(QMainWindow):
         self.initMenu()
         self.initFrames()
         self.currentePath = ""
+
+        #Atajos de teclado
+        #Atajo Abrir
+        self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+O'), self)
+        self.shortcutGuardar.activated.connect(self.abrirArchivo)
+        #Atajo Guardar
+        self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+S'), self)
+        self.shortcutGuardar.activated.connect(self.guardarArchivo)
+        #Atajo Guardar Como
+        self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+Shift+S'), self)
+        self.shortcutGuardar.activated.connect(self.guardarComoArchivo)
+        #Atajo Cerrar
+        self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+Q'), self)
+        self.shortcutGuardar.activated.connect(self.closeEvent)
+        #Atajo Minimizar
+        self.shortcut_minimize = QShortcut(QKeySequence('Ctrl+M'), self)
+        self.shortcut_minimize.activated.connect(self.showMinimized)
+        #Atajo Separar tokens
+        self.shortcut_minimize = QShortcut(QKeySequence('F1'), self)
+        self.shortcut_minimize.activated.connect(self.separarEnTonkens)
+        #Atajo Separar tokens
+        self.shortcut_minimize = QShortcut(QKeySequence('F2'), self)
+        self.shortcut_minimize.activated.connect(self.clasificarTokens)
+        #Atajo Separar tokens
+        self.shortcut_minimize = QShortcut(QKeySequence('F3'), self)
+        self.shortcut_minimize.activated.connect(self.sistemaNum)
 
     def initMenu(self):
         MenuBar = self.menuBar()
@@ -46,13 +72,13 @@ class Window(QMainWindow):
         
         # Marco1
         Marco1 = QWidget()
-        Marco1.setFixedSize(900, 800)
+        Marco1.setFixedSize(900, 750)
         Marco1.setStyleSheet("background-color: white; border: none; padding: 0;")
         
         
         # Marco2
         Marco2 = QWidget()
-        Marco2.setFixedSize(990, 800)
+        Marco2.setFixedSize(990, 750)
         Marco2.setStyleSheet("background-color: white; border: none; padding: 0;")
 
         canvaUno = QVBoxLayout(Marco1)
@@ -75,7 +101,7 @@ class Window(QMainWindow):
         scroll_area1.setWidgetResizable(True)
         self.cajaTexto1 = QTextEdit()
         self.cajaTexto1.setFixedSize(5000, 5000)
-        self.cajaTexto1.setStyleSheet("font-size: 12px;")
+        self.cajaTexto1.setStyleSheet("font-size: 19px;")
         self.cajaTexto1.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll_area1.setWidget(self.cajaTexto1)
         
@@ -92,7 +118,7 @@ class Window(QMainWindow):
         scroll_area2.setWidgetResizable(True)
         self.cajaTexto2 = QTextBrowser()
         self.cajaTexto2.setFixedSize(5000, 5000)
-        self.cajaTexto2.setStyleSheet("font-size: 12px;")
+        self.cajaTexto2.setStyleSheet("font-size: 19px;")
         self.cajaTexto2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll_area2.setWidget(self.cajaTexto2)
         canvaDos.addWidget(scroll_area2)
@@ -209,18 +235,26 @@ class Window(QMainWindow):
             self.cajaTexto2.append( f"{numero_de_linea} {lineasTokens[:-2]}")
 
     def clasificar_error(self, error, token, numero_de_linea):
-        # Diccionario que mapea códigos de error a mensajes de error
         errores = {
-            '1': f"Error en la línea {numero_de_linea}: {token} no es número estado 1",
-            '2': f"Error en la línea {numero_de_linea}: {token} no es número estado 2",
-            '3': f"Error en la línea {numero_de_linea}: {token} no es número estado 3",
-            '4': f"Error en la línea {numero_de_linea}: {token} no es número estado 4",
-            '5': f"Error en la línea {numero_de_linea}: {token} no es número estado 5",
-            '6': f"Error en la línea {numero_de_linea}: {token} no es número estado 6",
-            '7': f"Error en la línea {numero_de_linea}: {token} no es número estado 7",
-            '8': f"Error en la línea {numero_de_linea}: {token} no es número estado 8",
+            '0': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es reconocido"),
+            '1': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es decimal, octal o hexadecimal válido"),
+            '2': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es hexadecimal válido"),
+            '3': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es hexadecimal válido"),
+            '4': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es hexadecimal válido"),
+            '5': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es decimal válido"),
+            '6': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es decimal válido"),
+            '7': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es decimal válido"),
+            '8': (f"Error en la línea {numero_de_linea}:\n"
+                  f"                     Revisa --->{token} no es octal válido"),
         }
-        # Retorna el mensaje de error correspondiente al código de error
         return errores.get(error, f"Error desconocido en la línea {numero_de_linea}: {token}")
 
     def sistemaNum(self):
@@ -245,7 +279,7 @@ class Window(QMainWindow):
                 if estadosAcepta:
                     lineasTokens += f"{token}, "
                 else:
-                    lineasTokens += f"{token}, error "
+                    lineasTokens += f"{token}, "
                     mensaje_error = self.clasificar_error(error, token, numero_de_linea)
                     self.cajaError.append(mensaje_error)
                                                         
@@ -257,7 +291,7 @@ class Window(QMainWindow):
         error=None
         continuar = True
 
-        while contador < len(entrada) and (continuar == True):
+        while contador < len(entrada) and (continuar==True) :
 
             simbolo = entrada[contador]
 
@@ -335,8 +369,11 @@ class Window(QMainWindow):
                     continuar = False 
 
             contador+=1
+        if estado == 2 and contador == len(entrada):
+            error = '2'
 
         estadosAcepta =  estado in [3,4,5,7,8]
+        print(error)
         return (estadosAcepta, error)
 
     def AutoNumeroReal(self, entrada):
