@@ -1,9 +1,8 @@
 import sys
 import re
-from PyQt5.QtWidgets import (QApplication,QMainWindow,QTextEdit,QLabel,QVBoxLayout,QHBoxLayout,QFileDialog,QTextBrowser,QWidget,QMessageBox,QScrollArea,QShortcut)
+from PyQt5.QtWidgets import (QApplication,QMainWindow,QTextEdit,QLabel,QVBoxLayout,QHBoxLayout,QFileDialog,QTextBrowser,QWidget,QMessageBox,QScrollArea,QShortcut, QMenu, QMenuBar, QAction)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QKeySequence
-
 
 class Window(QMainWindow):
     def __init__(self):
@@ -13,8 +12,10 @@ class Window(QMainWindow):
         self.width = 1920
         self.height = 1000
         self.initUI()
+        
 
     def initUI(self):
+        
         self.setWindowTitle("Proyecto Automatas y Lenguajes formales")
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.initMenu()
@@ -23,43 +24,69 @@ class Window(QMainWindow):
 
         #Atajos de teclado
         #Atajo Abrir
-        self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+O'), self)
-        self.shortcutGuardar.activated.connect(self.abrirArchivo)
+        self.shortcutAbrir = QShortcut(QKeySequence('Ctrl+O'), self)
+        self.shortcutAbrir.activated.connect(self.abrirArchivo)
         #Atajo Guardar
         self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+S'), self)
         self.shortcutGuardar.activated.connect(self.guardarArchivo)
         #Atajo Guardar Como
-        self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+Shift+S'), self)
-        self.shortcutGuardar.activated.connect(self.guardarComoArchivo)
+        self.shortcutGuardarComo = QShortcut(QKeySequence('Ctrl+Shift+S'), self)
+        self.shortcutGuardarComo.activated.connect(self.guardarComoArchivo)
         #Atajo Cerrar
-        self.shortcutGuardar = QShortcut(QKeySequence('Ctrl+Q'), self)
-        self.shortcutGuardar.activated.connect(self.closeEvent)
+        self.shortcutCerrar = QShortcut(QKeySequence('Ctrl+Q'), self)
+        self.shortcutCerrar.activated.connect(self.closeEvent)
         #Atajo Minimizar
         self.shortcut_minimize = QShortcut(QKeySequence('Ctrl+M'), self)
         self.shortcut_minimize.activated.connect(self.showMinimized)
         #Atajo Separar tokens
-        self.shortcut_minimize = QShortcut(QKeySequence('F1'), self)
-        self.shortcut_minimize.activated.connect(self.separarEnTonkens)
-        #Atajo Separar tokens
-        self.shortcut_minimize = QShortcut(QKeySequence('F2'), self)
-        self.shortcut_minimize.activated.connect(self.clasificarTokens)
-        #Atajo Separar tokens
-        self.shortcut_minimize = QShortcut(QKeySequence('F3'), self)
-        self.shortcut_minimize.activated.connect(self.sistemaNum)
+        self.shortcut_separarTokens = QShortcut(QKeySequence('F1'), self)
+        self.shortcut_separarTokens.activated.connect(self.separarEnTonkens)
+        #Atajo clasificaar tokens
+        self.shortcut_clasificarTokens = QShortcut(QKeySequence('F2'), self)
+        self.shortcut_clasificarTokens.activated.connect(self.clasificarTokens)
+        #Atajo Sistema Num
+        self.shortcut_sistemaNum = QShortcut(QKeySequence('F3'), self)
+        self.shortcut_sistemaNum.activated.connect(self.sistemaNum)
 
     def initMenu(self):
         MenuBar = self.menuBar()
 
         MenuFile = MenuBar.addMenu("Archivo")
-        MenuFile.addAction("Abrir", self.abrirArchivo)
-        MenuFile.addAction("Guardar", self.guardarArchivo)
-        MenuFile.addAction("Guardar como", self.guardarComoArchivo)
-        MenuFile.addAction("Salir", self.close)
+        MenuFile.addAction("Abrir Ctrl+O", self.abrirArchivo)
+        MenuFile.addAction("Guardar Ctrl+S", self.guardarArchivo)
+        MenuFile.addAction("Guardar como Ctrl+Shift+S", self.guardarComoArchivo)
+        MenuFile.addAction("Salir Ctrl+Q", self.closeEvent)
 
         MenuTokens = MenuBar.addMenu("Tokens")
-        MenuTokens.addAction("Obtener", self.separarEnTonkens)
-        MenuTokens.addAction("Clasificar", self.clasificarTokens)
-        MenuTokens.addAction("Sistemas Numericos", self.sistemaNum)
+        MenuTokens.addAction("Obtener F1", self.separarEnTonkens)
+        MenuTokens.addAction("Clasificar F2", self.clasificarTokens)
+        MenuTokens.addAction("Sistemas Numericos F3", self.sistemaNum)
+
+        MenuBar.setStyleSheet("""
+        QMenuBar {
+            background-color: gray;
+            color: white;
+            font-size: 18px; 
+        }
+        QMenuBar::item {
+            background-color: gray;
+            color: white;
+        }
+        QMenuBar::item::selected {
+            background-color: #2E2E2E;
+        }
+        QMenu {
+            background-color: #2E2E2E;  
+            color: white;  
+            font-size: 18px;
+        }
+        QMenu::item {
+            background-color: #2E2E2E;
+        }
+        QMenu::item::selected {
+            background-color: gray;  
+        }
+        """)
 
     def initFrames(self):
 
@@ -69,12 +96,10 @@ class Window(QMainWindow):
         mainWidget.setStyleSheet("background-color: gray;")
         mainCanva = QVBoxLayout(mainWidget)
 
-        
         # Marco1
         Marco1 = QWidget()
         Marco1.setFixedSize(900, 750)
         Marco1.setStyleSheet("background-color: white; border: none; padding: 0;")
-        
         
         # Marco2
         Marco2 = QWidget()
@@ -93,7 +118,7 @@ class Window(QMainWindow):
         tituloPrinUno.setFixedHeight(30)
 
         canvaUno.addWidget(tituloPrinUno)
-        fuente = QFont("Arial", 14, QFont.Bold)
+        fuente = QFont("Arial", 18, QFont.Bold)
         tituloPrinUno.setFont(fuente)
         tituloPrinUno.setAlignment(Qt.AlignCenter)
 
@@ -101,7 +126,7 @@ class Window(QMainWindow):
         scroll_area1.setWidgetResizable(True)
         self.cajaTexto1 = QTextEdit()
         self.cajaTexto1.setFixedSize(5000, 5000)
-        self.cajaTexto1.setStyleSheet("font-size: 19px;")
+        self.cajaTexto1.setStyleSheet("font-size: 24px;")
         self.cajaTexto1.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll_area1.setWidget(self.cajaTexto1)
         
@@ -118,12 +143,11 @@ class Window(QMainWindow):
         scroll_area2.setWidgetResizable(True)
         self.cajaTexto2 = QTextBrowser()
         self.cajaTexto2.setFixedSize(5000, 5000)
-        self.cajaTexto2.setStyleSheet("font-size: 19px;")
+        self.cajaTexto2.setStyleSheet("font-size: 24px;")
         self.cajaTexto2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll_area2.setWidget(self.cajaTexto2)
         canvaDos.addWidget(scroll_area2)
         
-
         # Ventana de error debajo de las cajas de texto
         ventanaError = QScrollArea()
         ventanaError.setWidgetResizable(True)
@@ -277,11 +301,30 @@ class Window(QMainWindow):
                 estadosAcepta, error = self.AutoSisNum(token)
 
                 if estadosAcepta:
-                    lineasTokens += f"{token}, "
+                    if re.match(r'0[Xx][0-9A-Fa-f]+',token):
+                        lineasTokens += f"Hex: {token}, "
+                    elif re.match(r'0[oO]?[0-7]+',token):
+                        lineasTokens += f"Oct: {token}, "
+                    elif re.match(r'-?\d+\.\d+|\d+\.\d+|-?\d+',token):
+                        lineasTokens += f"Decimal{token}, "
                 else:
-                    lineasTokens += f"{token}, "
-                    mensaje_error = self.clasificar_error(error, token, numero_de_linea)
-                    self.cajaError.append(mensaje_error)
+                    if re.match(r'0[Xx][0-9A-Fa-f]+',token):
+                        lineasTokens += f"Hex: {token}, "
+                        mensaje_error = self.clasificar_error(error, token, numero_de_linea)
+                        self.cajaError.append(mensaje_error)
+                    elif re.match(r'0[oO]?[0-7]+',token):
+                        lineasTokens += f"Oct: {token}, "
+                        mensaje_error = self.clasificar_error(error, token, numero_de_linea)
+                        self.cajaError.append(mensaje_error)
+                    elif re.match(r'-?\d+\.\d+|\d+\.\d+|-?\d+',token):
+                        lineasTokens += f"Decimal: {token}, "
+                        mensaje_error = self.clasificar_error(error, token, numero_de_linea)
+                        self.cajaError.append(mensaje_error)
+                    else :
+                        lineasTokens += f"No Identi: {token}, "
+                        mensaje_error = self.clasificar_error(error, token, numero_de_linea)
+                        self.cajaError.append(mensaje_error)
+
                                                         
             self.cajaTexto2.append( f"{numero_de_linea} {lineasTokens[:-2]}")
 
@@ -369,11 +412,11 @@ class Window(QMainWindow):
                     continuar = False 
 
             contador+=1
+
         if estado == 2 and contador == len(entrada):
             error = '2'
 
         estadosAcepta =  estado in [3,4,5,7,8]
-        print(error)
         return (estadosAcepta, error)
 
     def AutoNumeroReal(self, entrada):
@@ -523,17 +566,21 @@ class Window(QMainWindow):
 
         numero_de_linea = 0
 
-        for i in saltoLinea:
+        for i in saltoLinea: 
             # Se separa en tokens
-            
-            #tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\.(?=\w+\()|\(|\))', i) if token and not token.isspace()]
-            tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\.(?=\w+\()|\.(?=\w+\.\w+)|\(|\))', i) if token and not token.isspace()]
+            expresionesR = re.compile(
+                r'([<|>])|'  # captura '<'y'>'
+                r'(".*?")|'  # Texto entre ""
+                r'(\d+(,\d+)*(\.\d+)*(E+[-+]?\d+)?)|' # Captura numeros que pueden incluir comas, puntos y notacion Cientifica
+                r'([.,]\d+)|' # Captura '.' o ',' seguido de numeros
+                r'([^\s\.()]+)|' # Captura espacios, puntos o parentesis
+                r'([\.\(\)])' # Captura '.', y '(' o ')'
+            )
+            # compresion de lista
+            tokens = [match.group() for match in expresionesR.finditer(i) if match.group()]
+            # .finditer(i) inicia la busqueda de coincidencias
+            # match.group obtinee el resultado de la coincidencia con la expresion regular hallada por .finditer
 
-            #tokens = [token for token in re.split(r'(".*?"|\s+|(?<=\D)\.(?=\D)|\(\)|\(|\))', i) if token and not token.isspace()]
-            # Es mejor usar .split cuando se desea separar una cadena en multiples fragamentos
-            # Se usa if token and not token.isspace() para elimiar tokens vacios y que sean espacios en blancos
-
-            # Ciclo for que agrega los tokens clasificados por línea con su coma
             lineaClasifi = ""
             numero_de_linea += 1
 
@@ -575,6 +622,7 @@ class Window(QMainWindow):
                             + "\n")
                 
                 else:  # Identi
+                    
                     if self.AutoIdenti(token):
                         lineaClasifi += f"Identi: {token} | "
                     else:
@@ -585,9 +633,6 @@ class Window(QMainWindow):
 
             # Agregar la línea clasificada al resultado final con un salto de línea
             self.cajaTexto2.append( f"{numero_de_linea} {lineaClasifi[:-2]}")
-  
-
-        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
